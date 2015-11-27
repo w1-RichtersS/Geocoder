@@ -1,0 +1,126 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <link rel="stylesheet" href="theme/default/style.css" type="text/css" />
+    <script src="OpenLayers.js"></script>
+     <script type="text/javascript">
+        function load(){
+
+    var featurecollection = {"type":"FeatureCollection","features":[]};
+
+//featurecollection.features[]= {"type":"Feature","properties":{"Naam":"naam1","Periode":"circa 1410 - 1586"},"geometry":{"type":"Point","coordinates":[168020,365000]};
+
+            var mapOptions = {
+					projection: new OpenLayers.Projection("EPSG:28992"),
+					displayProjection: new OpenLayers.Projection("EPSG:28992"),
+
+					maxResolution: 1.40625,
+
+					allOverlays: true,
+					projection: new OpenLayers.Projection("EPSG:28992"),
+
+					resolutions: [3440.64,1720.32,860.16,430.08,215.04,107.52,53.76,26.88,13.44,6.72,3.36,1.68,0.84,0.42,0.21,0.105,0.05025],
+
+					maxExtent: new OpenLayers.Bounds(-285401.92,22598.08,595401.92,903401.92),
+ 					units: 'm',
+
+					theme: null,
+					controls: [
+					new OpenLayers.Control.LayerSwitcher(),
+					new OpenLayers.Control.Attribution(),
+				    new OpenLayers.Control.ZoomBox(),
+					new OpenLayers.Control.Navigation({ 'zoomWheelEnabled': true})
+                       ]
+
+                };
+
+                var map = new OpenLayers.Map( 'map', mapOptions );
+
+                var osm = new OpenLayers.Layer.OSM();
+
+
+
+
+
+laag_brt =   new OpenLayers.Layer.WMS(
+              "BRT",
+              "http://geodata.nationaalgeoregister.nl/wmsc?",
+              {
+                layers: "brtachtergrondkaart",
+               "FORMAT": "image/png",
+                transparent: true
+              },
+              {
+                transitionEffect: "resize",
+                'buffer': 0,
+                 visibility: true,
+                 isBaseLayer: false,
+            //    attribution: "PDOK"
+              }
+
+
+       );
+ laag_brt.setOpacity( 0.6 );
+
+map.addLayer (laag_brt);
+
+
+
+var val_naam0 = "BAG";
+var val_url0 = "http://geodata.nationaalgeoregister.nl/bagviewer/wms";
+var val_layers0 = "pand";
+var val_format0 = "image/png";
+
+var bag_layer =  new OpenLayers.Layer.WMS(
+                  val_naam0,
+                  val_url0,
+                  {
+                    layers: val_layers0,
+                   "FORMAT": val_format0,
+                    transparent:true
+                  },
+                  {
+                    transitionEffect: "resize",
+                    'buffer': 0,
+                    visibility: true
+                  }
+           );
+
+map.addLayer( bag_layer );
+bag_layer.setOpacity( 0.6 );
+
+
+
+                map.addControl( new OpenLayers.Control.MousePosition() );
+                 map.addControl(new OpenLayers.Control.LayerSwitcher());
+
+                map.setCenter(
+                new OpenLayers.LonLat(168000,365000) // Center of the map
+                        .transform(
+                new OpenLayers.Projection("EPSG:28992"), // transform from new RD
+                map.getProjectionObject()
+                ),
+                13); // Zoom level
+
+               map.events.register("mousemove", map, function(e) {
+                        var position = this.events.getMousePosition(e);
+                      //  OpenLayers.Util.getElement("coords").innerHTML = position;
+                });
+
+
+           var geojson_format = new OpenLayers.Format.GeoJSON();
+           var vector_layer = new OpenLayers.Layer.Vector();
+           map.addLayer(vector_layer);
+           vector_layer.addFeatures(geojson_format.read(featurecollection));
+
+
+
+
+        }
+
+    </script>
+  </head>
+  <body onload="load()">
+    <div id="map" class="smallmap"></div>
+    <div id="coords"></div>
+  </body>
+</html>

@@ -1,0 +1,132 @@
+html, body {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+}
+
+#haslogo {
+	position: absolute;
+	left: 40px;
+	width: 150px;
+	height: 100px;
+	z-index: 10000;
+}
+
+#logo img, #haslogo img {
+	width: 150px;
+}
+
+#logo {
+	float: right;
+	width: 150px;
+	height: 100px;
+}
+
+#map{
+    margin: 0;
+    width: 100%;
+    height: 80%;
+}
+
+#tabs{
+  overflow: hidden;
+  width: 100%; 
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#tabs li{
+  float: left;
+  margin: 0 .5em 0 0;
+}
+
+#tabs a{
+  position: relative;
+  background: #ddd;
+  background-image: linear-gradient(to bottom, #fff, #ddd);  
+  padding: .7em 3.5em;
+  float: left;
+  text-decoration: none;
+  color: #444;
+  text-shadow: 0 1px 0 rgba(255,255,255,.8);
+  border-radius: 5px 0 0 0;
+  box-shadow: 0 2px 2px rgba(0,0,0,.4);
+}
+
+#tabs a:hover,
+#tabs a:hover::after,
+#tabs a:focus,
+#tabs a:focus::after{
+  background: #fff;
+}
+
+#tabs a:focus{
+  outline: 0;
+}
+
+#tabs a::after{
+  content:'';
+  position:absolute;
+  z-index: 1;
+  top: 0;
+  right: -.5em;  
+  bottom: 0;
+  width: 1em;
+  background: #ddd;
+  background-image: linear-gradient(to bottom, #fff, #ddd);  
+  box-shadow: 2px 2px 2px rgba(0,0,0,.4);
+  transform: skew(10deg);
+  border-radius: 0 5px 0 0;  
+}
+
+#tabs #current a,
+#tabs #current a::after{
+	background: #fff; 
+  	z-index: 3;
+}
+
+#content
+{
+    background: #fff; 
+    padding: 2em;
+    height: 220px;
+    position: relative;
+    z-index: 2;	
+    border-radius: 0 5px 5px 5px;
+    box-shadow: 0 -2px 3px -2px rgba(0, 0, 0, .5);
+}
+
+button {
+	height: 40px;
+	background-color: RGB(150,191,13);
+	color: #ffffff;
+	font-weight: bold;
+	border-radius: 5px;
+}
+
+.inactive {
+    height: 40px;
+	background-color: RGB(150,191,13);
+	color: #808080;
+	font-weight: bold;
+	border-radius: 5px;
+}
+
+th {
+	text-align: left;
+}
+
+
+#gridtable{
+    border-collapse: collapse;
+}
+
+#gridtable th{
+    height: 50px;
+}
+
+#gridtable td, #gridtable, th{
+    padding-right: 15px;
+}

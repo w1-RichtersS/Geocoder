@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<head>
+	<title>Geocodeer service HAS-GMD</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+	<script src="js/wgs84_rd.js"></script>
+<!--    <script src="http://www.openlayers.org/dev/OpenLayers.js"></script> -->
+    <script src="OpenLayers.js"></script>
+	<script src="js/geocoder_new.js"></script>
+	<script src="http://js.arcgis.com/3.12/"></script>
+	<script type="text/javascript">
+        $(document).ready(function()
+        {
+        	$('#map').height($(window).height() - 100);
+		    $("#content div").hide(); // Initially hide all content
+		    $("#tabs li:first").attr("id","current"); // Activate first tab
+		    $("#content div:first").fadeIn(); // Show first tab content
+		    $("#inputTab > div").show();
+		    
+		    $('#tabs a').click(function(e) {
+		        e.preventDefault();
+		        if ($(this).closest("li").attr("id") == "current"){ //detection for current tab
+		         return       
+		        }
+		        else{             
+			        $("#content div").hide(); //Hide all content
+			        $("#tabs li").attr("id",""); //Reset id's
+			        $(this).parent().attr("id","current"); // Activate this
+			        $('#' + $(this).attr('name')).fadeIn(); // Show content for current tab
+			    	$('#' + $(this).attr('name') + " > div").show(); // Show all child-divs
+		        }
+		        if ($(this).attr("name") == 'kaartTab')
+		        {
+		            initMapPDOK();
+        			$('#haslogo').css({ top: $('#map').height() - 110, left: "35px"});
+		            $("#haslogo").show();
+		        }
+		        if ($(this).attr("name") == 'jsonTab')
+		        {
+		            createLatLonJSON();
+		        }
+		    });
+		    
+            import_excel();
+        });
+	</script>
+	<link href="http://www.openlayers.org/dev/theme/default/style.css" rel="stylesheet" />
+	<link href="geocoder.css" rel="stylesheet" />
+</head> 
+<body>
+	<ul id="tabs">
+	    <li><a href="#" name="helpTab">Welkom</a></li>    
+	    <li><a href="#" name="inputTab">Input</a></li>
+	    <li><a href="#" name="outputTab">Geocode output</a></li>
+	    <li><a href="#" name="kaartTab">Kaart</a></li>
+	    <li><a href="#" name="jsonTab">JSON output LatLon</a></li>
+	    <li><a href="#" name="jsonRD">JSON output RD</a></li>
+	</ul>
+	
+	<div id="content"> 
+	    <div id="helpTab"><h2>Welkom</h2>
+	    	<div id="logo"><img src="HASlogo.png" /></div>
+	    	<p>Welkom bij de Geocodeer-service van de opleiding GMD van HAS Hogeschool</p>
+	    	<p>Let op! Deze service is nog in ontwikkeling. </p>
+            <p>De werking is kort als volgt:</p>
+            <ol>
+                <li>Plak gegevens uit een Excel-bestand met adresgegevens in het tabblad "Input".</li>
+                <li>Geef aan of de eerste rij uit de Excel kolomnamen bevat.</li>
+                <li>Klik op "Data interpreteren"</li>
+                <li>Kies boven de adresvelden het juiste datatype (niet alle typen zijn nodig om te selecteren).</li>
+                <li>Kies eventueel het datatype "label" als tekst die verschijnt bij de markers in de kaart.</li>
+                <li>Klik op "Geocoding uitvoeren"</li>
+                <li>Voor de rijen verschijnen de coördinaten in RD (X, Y) en WGS84 (Lat, Lon)</li>
+                <li>Als voor rijen geen coördinaten verschijnen is het betreffende adres niet gevonden. Er kan opnieuw geprobeerd worden deze adressen te geocoderen door een aantal van de datatypen boven de kolommen te verminderen (selecteer voor deze kolommen "Kies datatype"). De geocodering wordt hierdoor uiteraard wel minder nauwkeurig. Klik opnieuw op "Geocoding uitvoeren". De reeds gevonden coördinaten blijven onveranderd.</li>
+                <li>Als je tevreden bent over het resultaat kun je de data uit het tablad "Geocode output" plakken in een Excel (let wel op de coördinaten bij plakken in een Nederlandse Excel. Hierbij gaat waarschijnlijk het plakken als gevolg van de punten ipv komma's niet goed. Los dit op in Excel.)</li>
+                <li>Als gebruikt gemaakt moet worden van JSON output, klik dan eerst op de "Kaart"-tab. Hierna is in beide JSON-tabs de JSON data beschikbaar.</li>
+            </ol>
+            <p>Tot slot: de geocoder werkt in FireFox het beste. Hier zie je langzaam de verschillende coördinaten verschijnen. In andere browsers verschijnen de coördinaten pas als alle adressen gecodeerd zijn.</p>
+            <p>Bij het gebruik van grote hoeveelheden data duurt het geocoderen lang. Het kan zijn dat de browser de melding geeft dat de pagina niet reageert. Klik dan op "wachten", zodat het geocodeer proces niet afgebroken wordt.</p>
+            <p>Voor vragen kun je contact opnemen met <a href="mailto:geolab@has.nl">geolab@has.nl</a></p>
+	    </div>
+	    <div id="inputTab">
+			<h2>Upload Excel-data</h2>
+			<div id='div_result_table'></div>
+			<div id='tekst_upload_eerste_regel'>
+				Kopieer vanuit Excel de data hierin:&nbsp;&nbsp;&nbsp;
+				<input id='check_eerste_regel' name='check_eerste_regel' type='checkbox' />
+				Eerste regel bevat kolomnamen
+				<br/>
+				<textarea style="width:98%;" rows=15 id='batch_upload'></textarea>
+		        <br/>		
+		        <button id='upload_check_button' class="more-space">Data interpreteren</button><br/>
+		    </div>
+		</div>
+   	    <div id="outputTab">...</div>
+	    <div id="kaartTab">
+	    	<div id="map">
+	    		<div id="haslogo"><img src="HASlogo.png" /></div>
+	    	</div>
+	    </div>
+	    <div id="jsonTab">
+	    	<h2>Output van LatLon in JSON formaat</h2>
+	    	<div id="showJSONLL"></div>
+	    </div>
+	    <div id="jsonRD">
+	    	<h2>Output van RD in JSON formaat</h2>
+	    	<div id="showJSONRD"></div>
+	    </div>
+	</div>	
+
+</body>

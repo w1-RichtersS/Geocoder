@@ -1,0 +1,5 @@
+label = voor markers
+maar als je label gebruikt duurt het berekenen heel lang
+neemt label mee in searchstring
+errors eruit halen
+kolomnamen meenemen uit excel
