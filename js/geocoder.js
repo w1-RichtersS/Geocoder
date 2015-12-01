@@ -1,15 +1,21 @@
+/**********************************************************\
+                      GENERAL VARIABLES
+\**********************************************************/
 var map;
 var vector_layerLL;
 var vector_layer;
 var gg = new OpenLayers.Projection("EPSG:900913");
 var sm = new OpenLayers.Projection("EPSG:4326");
-//Proj4js.defs["EPSG:28992"] = "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +towgs84=565.040,49.910,465.840,-0.40939,0.35971,-1.86849,4.0772";
 var rd = new OpenLayers.Projection("EPSG:28992");
 var labelKolom = "";
 var debugOnOff = false;
 var startKolom = 5;
 var xKolom = 1;
 
+
+/**********************************************************\
+                         FUNCTIONS
+\**********************************************************/
 function import_excel()
 {
     if (debugOnOff)
@@ -21,128 +27,151 @@ function import_excel()
         startKolom = 5;
         xKolom = 1;
     }
+
     var veld_type_array = new Array('Kies datatype', 'volledig adres', 'straat', 'huisnummer', 'toevoeging', 'postcode', 'plaats', 'land', 'label');
-    
-    var batch_content = "<h2>Upload Data met GeometrieProvider<div style='display:inline' id=import_exec></div></h2><div id=upload_result_table></div><div id=tekst_upload_eerste_regel>Kopieer vanuit Excel de data hierin:&nbsp;&nbsp;&nbsp;<input id=check_eerste_regel type=checkbox />Eerste regel bevat kolomnamen<br/><textarea style=\"width:98%;\" rows=15 id=batch_upload></textarea><br/><button id=upload_check_button class=\"more-space\">Data interpreteren</button><br/></div><input id=settings_menu type=hidden value=\"12\" /><br>";
+    var batch_content = "\
+    <h2>Upload Data met GeometrieProvider<div id=import_exec style='display:inline'></div></h2>\
+    <div id=upload_result_table></div>\
+    <div id=tekst_upload_eerste_regel>Kopieer vanuit Excel de data hierin:&nbsp;&nbsp;&nbsp;\
+        <input id=check_eerste_regel type=checkbox />Eerste regel bevat kolomnamen<br/>\
+        <textarea id=batch_upload style=\"width:98%;\" rows=15 ></textarea><br/>\
+        <button id=upload_check_button class=\"more-space\">Data interpreteren</button><br/>\
+    </div>\
+    <input id=settings_menu type=hidden value=\"12\" /><br>";
 
     //upload_check_button = data interpreteren op input-tab
     $("#upload_check_button").click(function () {
-        var eerste_regel_checked = $("input[name='check_eerste_regel']").is(':checked');
-
+        //variables
+        var eerste_regel_checked = $("input[name='check_eerste_regel']").is(':checked'); //kolomnamen
         var all_data = new Array();
-
         // Haal nu de attributen op die bij deze Layer/Functie horen
-
-        var regels = $("#batch_upload").val().split("\n");
-
+        var regels = $("#batch_upload").val().split("\n"); //value van textarea gesplit door een newline
         var clean_data = "";
-        if (regels.length > 0) {
+
+        if (regels.length > 0) { //check of textarea is gevuld
             var top_row = "";
             $("#tekst_upload_eerste_regel").hide();
-            var split_type = 1;
-            var array_eerste_regel = regels[0].split("\t");
+            var split_type = 1; //== tab
+            var array_eerste_regel = regels[0].split("\t"); //split door tab
             var nr_columns = array_eerste_regel.length;
+            /*after split by tab, there is still just one line
+            this means that there is an other split-sign */
             if (nr_columns == 1) {
                 var array_eerste_regel = regels[0].split(";");
                 var nr_columns = array_eerste_regel.length;
-                split_type = 2;
+                split_type = 2; //==semicolumn
             }
 
-
-            //rij met table headers
-            top_row = "<tr>";
-            top_row += "<th class='hide'>Kies</th>";
+            /*************************************************\
+            TABLE HEADERS
+            \*************************************************/
+            top_row = "<tr>\
+                       <th class='hide'>Kies</th>";
             if (debugOnOff) {
                 top_row += "<th class='showth'>Provider</th>";
             }
-            top_row += "<th class='showth'>X</th><th class='showth'>Y</th><th class='showth'>Lat</th><th class='showth'>Lon</th>";
-
+            top_row += "<th class='showth'>X</th>\
+                        <th class='showth'>Y</th>\
+                        <th class='showth'>Lat</th>\
+                        <th class='showth'>Lon</th>";
             var extra_kol_keuzes = "";
-            for (j = 0; j < veld_type_array.length; j++) {
-                extra_kol_keuzes += "<option value='" + j + "'>" + veld_type_array[j] + "</option>";
+
+            for (j = 0; j < veld_type_array.length; j++) {//loop through array for types (straat, huisnummer, postcode, etc)
+                extra_kol_keuzes += "<option value='" + j + "'>" + veld_type_array[j] + "</option>"; //make dropdown list for output
             }
 
-            for (i = 0; i < array_eerste_regel.length; i++) {
-
-                if ((array_eerste_regel[i] != "") && (eerste_regel_checked)) {
-
-                    top_row += "<th><span class='hide'><select id='excel_" + i + "'>" + extra_kol_keuzes + "</select></span><br/>";
-                    top_row += "<span class='showth'>" + array_eerste_regel[i] + "</span></th>";
-
+            for (i = 0; i < array_eerste_regel.length; i++) {//loop through array from textarea (input by user)
+                if ((array_eerste_regel[i] != "") && (eerste_regel_checked)) {//if first line is kolomnamen
+                    top_row += "<th><span class='hide'><select id='excel_" + i + "'>" + extra_kol_keuzes + "</select></span><br/>\
+                                    <span class='showth'>" + array_eerste_regel[i] + "</span>\
+                                </th>"; //fill dropdown-menu + add kolomnamen 
                 } else {
-                    top_row += "<th class='hide'><select class='select' id='excel_" + i + "'>" + extra_kol_keuzes + "</select>";
-
+                    top_row += "<th class='hide'><select class='select' id='excel_" + i + "'>" + extra_kol_keuzes + "</select>"; //fill dropdown menu
                 }
             }
-            top_row += "</tr>";
 
+            top_row += "</tr>"; // close first row
 
-
+            /*************************************************\
+            TABLE CONTENT
+            \*************************************************/
             var content = "";
             var start = 0;
-            if (eerste_regel_checked) {
+            if (eerste_regel_checked) {//kolomnamen
                 start = 1;
             }
-            for (j = start; j < regels.length; j++) {
+            for (j = start; j < regels.length; j++) {//loop through user-input
 
-                if (split_type == 1) {
-                    var array_regel = regels[j].split("\t");
-
-                } else {
-                    var array_regel = regels[j].split(";");
-
+                if (split_type == 1) {//splittype == tab
+                    var array_regel = regels[j].split("\t"); //split each line (regel) and split that line by tab, store this in array
+                }
+                else {//splittype == semicolumn
+                    var array_regel = regels[j].split(";"); //split each line (regel) and split that line by semicolumn, store this in array
                 }
 
-                if (nr_columns == array_regel.length) {
+                if (nr_columns == array_regel.length) {//length firstline equals length of next line
                     var deze_regel = "";
-                    content += "<tr>";
-                    content += "<td class='hide'>" + j + "</td>";
+                    content += "<tr>\
+                                    <td class='hide'>" + j + "</td>"; //kies (linenumber)
                     if (debugOnOff) {
                         content += '<td class=\'showtd\' id="prov' + j + '"></td>';
                     }
-                    content += '<td class=\'showtd\' id="x' + j + '"></td>';
-                    content += '<td class=\'showtd\' id="y' + j + '"></td>';
-                    content += '<td class=\'showtd\' id="lat' + j + '"></td>';
-                    content += '<td class=\'showtd\' id="lon' + j + '"></td>';
+                    content += '<td class=\'showtd\' id="x' + j + '"></td>\
+                                <td class=\'showtd\' id="y' + j + '"></td>\
+                                <td class=\'showtd\' id="lat' + j + '"></td>\
+                                <td class=\'showtd\' id="lon' + j + '"></td>';
 
-                    for (i = 0; i < array_regel.length; i++) {
-                        content += "<td class='showtd'>" + array_regel[i] + "</td>";
-
-                        if (deze_regel != "") {
+                    for (i = 0; i < array_regel.length; i++) {//loop trough each item in the line
+                        content += "<td class='showtd'>" + array_regel[i] + "</td>"; //add data to content
+                        if (deze_regel != "") {//if deze_regel is filled add semicolumn
                             deze_regel += ";";
                         }
-                        deze_regel += array_regel[i];
+                        deze_regel += array_regel[i]; //add item to deze_regel
                     }
-
-                    content += "</tr>";
-
-                    all_data[j] = deze_regel;
+                    content += "</tr>"; //end row
+                    all_data[j] = deze_regel; //add line to array at same index (array is empty at that index)
                 }
-
             }
-            $("#outputTab").html("<table cellspacing=\"5\" cellpadding=\"5\" border=\"0\"><tr><td><button id=execute_import class=\"more-space\">Geocoding uitvoeren</button></td><td><a href=\"#\" id=download_csv role=\"button\" >Download CSV</button></a></td></tr></table><br /><table id='gridtable'>" + top_row + content + "</table>");
-            $("#tabs a[name='outputTab']").trigger('click');
-            //execute_import = geocoding uitvoeren button van tab geocode output
-            $("#execute_import").click(function () {
 
-                $(this).css("background-color", "#D9D9D9");
-                labelKolom = "";
-
-                var data_post =
-                {
-                };
-
+            /*************************************************\
+            OUTPUT TAB
+            \*************************************************/
+            /*add to tables to outputtab
+            first table are the buttons
+            second is filled with tableheaders and tablecontent (variables filled above)*/
+            $("#outputTab").html("<table cellspacing=\"5\" cellpadding=\"5\" border=\"0\">\
+                                    <tr>\
+                                        <td><button id=execute_import class=\"more-space\">Geocoding uitvoeren</button></td>\
+                                        <td><a href=\"#\" id=download_csv role=\"button\" >Download CSV</button></a></td>\
+                                    </tr>\
+                                  </table><br />\
+                                  <table id='gridtable'>" + top_row + content + "</table>");
+            $("#tabs a[name='outputTab']").trigger('click'); //trigger the function click on the outputtab
+            $("#execute_import").click(function () {//click on button "geocoding uitvoeren"
+                $(this).css("background-color", "#D9D9D9"); //change background color
+                //variables
+                labelKolom = ""; //general variable
+                var data_post = {};
                 var new_regel = "";
-                $("[id^=excel]").each(function (i) {
 
+                $("[id^=excel]").each(function (i) {//dropdown-lists
                     if (new_regel != "") {
                         new_regel += ";";
                     }
-                    new_regel += $(this).val();
-                    if ($(this).val() == 8) {
-                        labelKolom = i + startKolom;
+                    /* values dropdown:
+                    0 ==>'Kies datatype', 
+                    1 ==>'volledig adres', 
+                    2 ==>'straat', 
+                    3 ==>'huisnummer', 
+                    4 ==>'toevoeging', 
+                    5 ==>'postcode', 
+                    6 ==>'plaats', 
+                    7 ==>'land', 
+                    8 ==>'label*/
+                    new_regel += $(this).val(); //add value of this element to new_regel
+                    if ($(this).val() == 8) {//label
+                        labelKolom = i + startKolom;//labelkolom = number of kolom (kies = 0, x = 1, etc.)
                     }
-
                 });
 
                 data_post["excel_attributen"] = new_regel;
@@ -187,81 +216,6 @@ function import_excel()
                             }
                         });
 
-                        /*
-                        $.ajax(
-                        {
-                        type : "POST",
-                        async : false,
-                        url : url_send_excel_data,
-                        data : data_post,
-                        dataType : "html",
-                        timeout: 5000
-                        }).done(function(result)
-                        {
-                        var coords = result.split(";");
-                        if (result && coords.length > 0)
-                        {
-                        if ($("#x" + (k)).html() == "")
-                        {
-                        if (debugOnOff == 1)
-                        {
-                        $("#prov" + (k)).html(coords[2]);
-                        }
-                        $("#x" + (k)).html(wgs842rd_x( coords[0],coords[1]));
-                        $("#y" + (k)).html(wgs842rd_y( coords[0],coords[1]));
-                        $("#lat" + (k)).html(coords[0]);
-                        $("#lon" + (k)).html(coords[1]);
-                        }
-                        }
-                        else  // geocoderen via ESRI of Google
-                        {
-                        var search = "";
-                        var fields = all_data[k].split(";");
-                        var allowed = new_regel.split(";");
-                        for( var i = 0; i < fields.length; i++)
-                        if(allowed[i] > 0)
-                        search += fields[i] + " ";
-
-                        GetGoogleGeocoder(search, function(data){
-                        if(data.status == "ZERO_RESULTS")
-                        return;
-                        if (debugOnOff == 1)
-                        {
-                        $("#prov" + (k)).html("Google");
-                        }
-                        $("#x" + (k)).html(wgs842rd_x( data.results[0].geometry.location.lat, data.results[0].geometry.location.lng));
-                        $("#y" + (k)).html(wgs842rd_y( data.results[0].geometry.location.lat, data.results[0].geometry.location.lng));
-                        $("#lat" + (k)).html(data.results[0].geometry.location.lat);
-                        $("#lon" + (k)).html(data.results[0].geometry.location.lng);
-                        });
-                        }
-
-                        /*
-                        var search = "";
-                        var fields = all_data[k].split(";");
-                        var allowed = new_regel.split(";");
-                        for( var i = 0; i < fields.length; i++)
-                        if(allowed[i] > 0)
-                        search += fields[i] + " ";
-
-                        GetNominatimGeocoder(search, function(data){
-                        if((!data || data.length < 1)
-                        return;
-                        if (debugOnOff == 1)
-                        {
-                        $("#prov" + (k)).html("Nominatim");
-                        }
-                        $("#x" + (k)).html(wgs842rd_x( data[0].lat, data[0].lon));
-                        $("#y" + (k)).html(wgs842rd_y( data[0].lat, data[0].lon));
-                        $("#lat" + (k)).html(data[0].lat);
-                        $("#lon" + (k)).html(data[0].lon);
-                        });
-
-                        *
-
-                        }).fail(function(jqXHR, textStatus){
-                        alert("Er is iets fout gegaan met het verbinden met de geocodeerservice");
-                        });*/
                     }
                 }
                 $("#execute_import").css("background-color", "#96BF0D");
@@ -339,8 +293,8 @@ function import_excel()
                 function grabCol(j, col) {
                     var $col = $(col),
                         $text = $col.text();
-                        //replace scheidingstekens voor nederlandse excel
-                        $text = $text.replace(".", ",");
+                    //replace scheidingstekens voor nederlandse excel
+                    $text = $text.replace(".", ",");
 
                     return $text.replace('"', '""'); // escape double quotes
 
@@ -411,7 +365,7 @@ function initMapPDOK()
 
     var defaultStyle1 = new OpenLayers.Style(
     {
-        externalGraphic : 'has.png',
+        externalGraphic : '../images/has.png',
         graphicWidth : 28,
         graphicHeight : 28,
         label : "${label}", // gebruik van het attribuut van het feature genaamd label

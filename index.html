@@ -2,16 +2,14 @@
 <html>
 <head>
 	<title>Geocodeer service HAS-GMD</title>
-	<!--<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />-->
-	<!--- sacha comment -->
-	<!-- HTML5 has a new attribute, charset, which makes it easier to define charset:
-	HTML 4.01: <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	HTML5: -->
     <meta charset="UTF-8">
+    <!--has icon-->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!--include jquery-->
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <!--JS includes-->
 	<script src="js/wgs84_rd.js"></script><!--berekenen latLong-->
-    <!--<script src="http://www.openlayers.org/dev/OpenLayers.js"></script>-->
     <script src="js/OpenLayers.js"></script><!--open layers mapview library-->
 	<script src="js/geocoder.js"></script>
 	<script src="http://js.arcgis.com/3.12/"></script>
@@ -25,7 +23,7 @@
 
          $('#tabs a').click(function (e) {
              e.preventDefault();
-             if ($(this).closest("li").attr("id") == "current") { //detection for current tab
+             if ($(this).closest("li").attr("id") == "current") { //if current tab return
                  return
              }
              else {
@@ -34,6 +32,9 @@
                  $(this).parent().attr("id", "current"); // Activate this
                  $('#' + $(this).attr('name')).fadeIn(); // Show content for current tab
                  $('#' + $(this).attr('name') + " > div").show(); // Show all child-divs
+             }
+             if ($(this).attr("name") == 'inputTab') {
+                 $("#batch_upload").focus();
              }
              if ($(this).attr("name") == 'kaartTab') {
                  initMapPDOK();
@@ -48,10 +49,13 @@
          import_excel();
      });
 	</script>
-	<!--<link href="http://www.openlayers.org/dev/theme/default/style.css" rel="stylesheet" /> deze file is niet gevonden...-->
+    <!--style includes-->
+	<link href="style/OpenLayers.css" rel="stylesheet" />
 	<link href="style/geocoder.css" rel="stylesheet" />
-    
+
+    <!--<script src="https://maps.googleapis.com/maps/api/js?sensor=false"></script> sensor parameter no longer required--> 
 </head> 
+
 <body>
 	<ul id="tabs">
 	    <li><a href="#" name="helpTab">Welkom</a></li>    

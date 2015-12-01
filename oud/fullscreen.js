@@ -46,8 +46,7 @@ map.addControl(new OpenLayers.Control.LayerSwitcher());
                 })
             });
 var geojson_format = new OpenLayers.Format.GeoJSON();
-
-var vector_layer = new OpenLayers.Layer.Vector('Outdoor', myStyles );
+ vector_layer = new OpenLayers.Layer.Vector('Outdoor', myStyles );
 
 
 map.addLayer(vector_layer);
