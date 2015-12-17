@@ -30,14 +30,14 @@ function import_excel()
 
     var veld_type_array = new Array('Kies datatype', 'volledig adres', 'straat', 'huisnummer', 'toevoeging', 'postcode', 'plaats', 'land', 'label');
     var batch_content = "\
-    <h2>Upload Data met GeometrieProvider<div id=import_exec style='display:inline'></div></h2>\
-    <div id=upload_result_table></div>\
-    <div id=tekst_upload_eerste_regel>Kopieer vanuit Excel de data hierin:&nbsp;&nbsp;&nbsp;\
-        <input id=check_eerste_regel type=checkbox />Eerste regel bevat kolomnamen<br/>\
-        <textarea id=batch_upload style=\"width:98%;\" rows=15 ></textarea><br/>\
-        <button id=upload_check_button class=\"more-space\">Data interpreteren</button><br/>\
-    </div>\
-    <input id=settings_menu type=hidden value=\"12\" /><br>";
+        <h2>Upload Data met GeometrieProvider<div id=import_exec style='display:inline'></div></h2>\
+        <div id=upload_result_table></div>\
+        <div id=tekst_upload_eerste_regel>Kopieer vanuit Excel de data hierin:&nbsp;&nbsp;&nbsp;\
+            <input id=check_eerste_regel type=checkbox />Eerste regel bevat kolomnamen<br/>\
+            <textarea id=batch_upload style=\"width:98%;\" rows=15 ></textarea><br/>\
+            <button id=upload_check_button class=\"more-space\">Data interpreteren</button><br/>\
+        </div>\
+        <input id=settings_menu type=hidden value=\"12\" /><br>";
 
     //upload_check_button = data interpreteren op input-tab
     $("#upload_check_button").click(function () {
@@ -63,7 +63,7 @@ function import_excel()
             }
 
             /*************************************************\
-            TABLE HEADERS
+                                TABLE HEADERS
             \*************************************************/
             top_row = "<tr>\
                        <th class='hide'>Kies</th>";
@@ -93,7 +93,7 @@ function import_excel()
             top_row += "</tr>"; // close first row
 
             /*************************************************\
-            TABLE CONTENT
+                                TABLE CONTENT
             \*************************************************/
             var content = "";
             var start = 0;
@@ -134,7 +134,7 @@ function import_excel()
             }
 
             /*************************************************\
-            OUTPUT TAB
+                                OUTPUT TAB
             \*************************************************/
             /*add to tables to outputtab
             first table are the buttons
@@ -174,11 +174,11 @@ function import_excel()
                     }
                 });
 
-                data_post["excel_attributen"] = new_regel;
+                data_post["excel_attributen"] = new_regel; //add excel attributes to data_post array
 
-                data_post['ts'] = new Date().getTime();
+                data_post['ts'] = new Date().getTime();//add timestamp to data_post array
 
-                var url_send_excel_data = "send_excel_data.php";
+                //var url_send_excel_data = "send_excel_data.php"; --oude code
 
                 var start = 0;
                 if (eerste_regel_checked) {
