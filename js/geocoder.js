@@ -556,9 +556,25 @@ function createLatLonJSON()
         'internalProjection' : gg,
         'externalProjection' : sm
     }).write(vector_layerLL.features, true);
-    if (myJSON.indexOf("label") != 0){
+
+    //string manipulation on JSON LL to remove the propertie "label" from the myJSON string
+    //it first gets the index of the word "label" (with quotations)
+    //then it devides myJSON into 2 substrings, before "label" and after "label"
+    //then it finds the index of the komma (the one after "label")
+    //after that it saves a new substring without the whole "label"-line (incl. the propertie value)
+    //at last the first substring is added to the last substring and saved in the variable myJSON
+    while (myJSON.indexOf("label") != -1)
+    {
+        var length_myJSON = myJSON.length;//save length of myJSON
+        var index_label = myJSON.indexOf("\"label\"");//save index of label
+        var before_substr = myJSON.substr(0,index_label);//save substring before the label-word
+        var after_substr = myJSON.substr(index_label, length_myJSON);//save length of substring after the label index
+        var index_komma = after_substr.indexOf(","); //save index of the komma after label
+        var last_sub = after_substr.substr(index_komma + 1, length_myJSON);//save new substring after the label-line
+
+        var myJSON = before_substr + last_sub;
         console.log(myJSON);
-        var index_label = myJSON.indexOf("label");
+
     }
     $("#showJSONLL").html(myJSON);
 
