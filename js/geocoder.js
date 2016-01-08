@@ -63,7 +63,7 @@ function import_excel()
             }
 
             /*************************************************\
-                                TABLE HEADERS
+            TABLE HEADERS
             \*************************************************/
             top_row = "<tr>\
                        <th class='hide'>Kies</th>";
@@ -83,7 +83,7 @@ function import_excel()
             for (i = 0; i < array_eerste_regel.length; i++) {//loop through array from textarea (input by user)
                 if ((array_eerste_regel[i] != "") && (eerste_regel_checked)) {//if first line is kolomnamen
                     top_row += "<th><span class='hide'><select id='excel_" + i + "'>" + extra_kol_keuzes + "</select></span><br/>\
-                                    <span class='showth'>" + array_eerste_regel[i] + "</span>\
+                                    <span id='kolomnaam_" + i + "' class='showth'>" + array_eerste_regel[i] + "</span>\
                                 </th>"; //fill dropdown-menu + add kolomnamen 
                 } else {
                     top_row += "<th class='hide'><select class='select' id='excel_" + i + "'>" + extra_kol_keuzes + "</select>"; //fill dropdown menu
@@ -93,7 +93,7 @@ function import_excel()
             top_row += "</tr>"; // close first row
 
             /*************************************************\
-                                TABLE CONTENT
+            TABLE CONTENT
             \*************************************************/
             var content = "";
             var start = 0;
@@ -134,7 +134,7 @@ function import_excel()
             }
 
             /*************************************************\
-                                OUTPUT TAB
+            OUTPUT TAB
             \*************************************************/
             /*add to tables to outputtab
             first table are the buttons
@@ -170,15 +170,13 @@ function import_excel()
                     8 ==>'label*/
                     new_regel += $(this).val(); //add value of this element to new_regel
                     if ($(this).val() == 8) {//label
-                        labelKolom = i + startKolom;//labelkolom = number of kolom (kies = 0, x = 1, etc.)
+                        labelKolom = i + startKolom; //labelkolom = number of kolom (kies = 0, x = 1, etc.)
                     }
                 });
 
                 data_post["excel_attributen"] = new_regel; //add excel attributes to data_post array
 
-                data_post['ts'] = new Date().getTime();//add timestamp to data_post array
-
-                //var url_send_excel_data = "send_excel_data.php"; --oude code
+                data_post['ts'] = new Date().getTime(); //add timestamp to data_post array
 
                 var start = 0;
                 if (eerste_regel_checked) {
@@ -187,11 +185,15 @@ function import_excel()
                 for (k = start; k < all_data.length; k++) {
                     if ($("#x" + (k)).text().length == 0 || $("#y" + (k)).text().length == 0 || $("#lat" + (k)).text().length == 0 || $("#lon" + (k)).text().length == 0) {
                         data_post["excel_data"] = all_data[k];
-                        //                   data_post["zoekRegio"] = $('input[name=radRegio]:checked').val();
-
                         var search = "";
                         var fields = all_data[k].split(";");
-                        var allowed = new_regel.split(";");
+                        var new_regel_noLabel = "";
+                        for (var i = 0; i < new_regel.length; i++ ){//function to make label disapear in searching for adresses
+                            if (new_regel[i] != 8){
+                                new_regel_noLabel += new_regel[i];
+                            }
+                        }
+                        var allowed = new_regel_noLabel.split(";");
                         for (var i = 0; i < fields.length; i++)
                             if (allowed[i] > 0)
                                 search += fields[i] + " ";
@@ -240,9 +242,6 @@ function import_excel()
                 // actual delimiter characters for CSV format
                     , colDelim = '";"'
                     , rowDelim = '"\r\n"';
-
-                //proberen scheidingstekens te vervangen
-
 
                 // Grab text from table into CSV formatted string
                 var csv = '"';
@@ -434,20 +433,17 @@ function initMapPDOK()
 
     vector_layerLL.events.on(
     {
-        'featureselected' : function(evt)
-        {
+        'featureselected': function (evt) {
             var popupText = "";
-            $.each(evt.feature.attributes, function(attr)
-            {
-                popupText += this + "<br>";
+            $.each(evt.feature.attributes, function (attr) {
+                popupText += attr + ": " + this + "<br>";
             });
             var feature = evt.feature;
             var popup = new OpenLayers.Popup.FramedCloud("popup", OpenLayers.LonLat.fromString(feature.geometry.toShortString()), null, "<div style='font-size:.8em'>" + popupText + "</div>", null, true);
             feature.popup = popup;
             map.addPopup(popup);
         },
-        'featureunselected' : function(evt)
-        {
+        'featureunselected': function (evt) {
             var feature = evt.feature;
             map.removePopup(feature.popup);
             feature.popup.destroy();
@@ -459,10 +455,8 @@ function initMapPDOK()
     var minY = 180;
     var maxY = -180;
 
-    $("#gridtable tr").each(function(recnr)
-    {
-        if (recnr > 0)
-        {
+    $("#gridtable tr").each(function (recnr) {
+        if (recnr > 0) {
             var xcoord;
             var ycoord;
             var lat;
@@ -473,36 +467,28 @@ function initMapPDOK()
             lat = "";
             lon = "";
 
-            $.each(this.cells, function(i)
-            {
-                if (i == xKolom)
-                {
+            $.each(this.cells, function (i) {
+                if (i == xKolom) {
                     xcoord = $(this).html();
                 }
-                if (i == xKolom + 1)
-                {
+                if (i == xKolom + 1) {
                     ycoord = $(this).html();
                     var newPoint;
                     newPoint = new OpenLayers.Geometry.Point(xcoord, ycoord);
                     point_feature = new OpenLayers.Feature.Vector(newPoint);
-
                 }
-                if (i == xKolom + 2)
-                {
+                if (i == xKolom + 2) {
                     lat = $(this).html();
-                    if (lat != null && lat != "")
-                    {
+                    if (lat != null && lat != "") {
                         if (lat > maxY)
                             maxY = lat;
                         if (lat < minY)
                             minY = lat;
                     }
                 }
-                if (i == xKolom + 3)
-                {
+                if (i == xKolom + 3) {
                     lon = $(this).html();
-                    if (lon != null && lon != "")
-                    {
+                    if (lon != null && lon != "") {
                         if (lon > maxX)
                             maxX = lon;
                         if (lon < minX)
@@ -512,26 +498,43 @@ function initMapPDOK()
                         point_featureLL = new OpenLayers.Feature.Vector(newPoint);
                     }
                 }
-                if (i > xKolom + 3)
+                if (i > xKolom + 3) 
                 {
-                    point_feature.attributes['kolom' + i] = $(this).html();
-                    if (lat != null && lat != "")
-                    {
-                        if (i == labelKolom)
-                        {
-                            point_featureLL.attributes['label'] = $(this).html();
-                        } else
-                        {
-                            point_featureLL.attributes['kolom' + i] = $(this).html();
-                        }
+                    point_feature.attributes['kolom' + i] = $(this).html(); //default value
+                    var i_excel = i - 5; //number of kolomindex from dropdownlist
 
+                    if (lat != null && lat != "") 
+                    {
+                        if (i == labelKolom) {//dit statement is nodig om een label onder de marker te plaatsen
+                            point_featureLL.attributes['label'] = $(this).html();
+                        }
+                        else 
+                        {
+                           //get values from dropdown lists
+                            var id_dropdown = "excel_" + i_excel;
+                            var e_dropdown = document.getElementById(id_dropdown);
+                            var value_dropdown = e_dropdown.options[e_dropdown.selectedIndex].text;
+
+                            //if kolomnames are given at input, make kolomname the given name (from excel origin)
+                            var eerste_regel_checked = $("input[name='check_eerste_regel']").is(':checked');
+                            if (eerste_regel_checked) { //tabel heeft kolomnamen
+                                var id_kolomnaam = "kolomnaam_" + i_excel;
+                                var kolomnaam = document.getElementById(id_kolomnaam).innerHTML;
+                                point_featureLL.attributes[kolomnaam] = $(this).html();
+                            }
+                            //if kolomnames aren't given, use the values of the dropdown lists as kolomnames
+                            else {//tabel heeft geen kolomnamen
+                                var kolomnaam = value_dropdown;
+                                point_featureLL.attributes[kolomnaam] = $(this).html();
+                            } 
+                        }   
+                        
                     }
                 }
             });
             vector_layer.addFeatures(point_feature);
 
-            if (lat != null && lat != "")
-            {
+            if (lat != null && lat != "") {
                 vector_layerLL.addFeatures(point_featureLL);
             }
         }
@@ -647,16 +650,14 @@ function GetBagGeocoder(address, callback)
     {
         $.ajax(
         {
-            type : "GET",
-            async : false,
-            url : "http://geodata.nationaalgeoregister.nl/geocoder/Geocoder?strict=false&zoekterm=" + address,
-            timeout : 5000
-        }).done(function(result)
-        {
+            type: "GET",
+            async: false,
+            url: "http://geodata.nationaalgeoregister.nl/geocoder/Geocoder?strict=false&zoekterm=" + address,
+            timeout: 5000
+        }).done(function (result) {
             var xmlObj = xmlToJson(result);
 
-            if (xmlObj.GeocodeResponse.GeocodeResponseList == undefined)
-            {
+            if (xmlObj.GeocodeResponse.GeocodeResponseList == undefined) {
                 callback(undefined);
                 return;
             }
@@ -664,19 +665,17 @@ function GetBagGeocoder(address, callback)
             var raw = xmlObj.GeocodeResponse.GeocodeResponseList.GeocodedAddress.Point.pos.text;
 
             raw = raw.split(" ");
-
             var obj =
             {
-                provider : "Bach",
-                x : raw[0],
-                y : raw[1],
-                lat : rd2wgs84_lat(raw[0], raw[1]),
-                lng : rd2wgs84_lon(raw[0], raw[1])
+                provider: "Bach",
+                x: raw[0],
+                y: raw[1],
+                lat: rd2wgs84_lat(raw[0], raw[1]),
+                lng: rd2wgs84_lon(raw[0], raw[1])
             };
 
             callback(obj);
-        }).fail(function(jqXHR, textStatus)
-        {
+        }).fail(function (jqXHR, textStatus) {
             callback(undefined);
         });
     } catch(exception)
