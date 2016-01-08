@@ -427,6 +427,8 @@ function initMapPDOK()
         box : false
     });
 
+    var eerste_regel_checked = $("input[name='check_eerste_regel']").is(':checked'); //check if first line is columnnames
+    var i_excel = 0;
     map.addControl(sel_feature);
 
     sel_feature.activate();
@@ -436,15 +438,17 @@ function initMapPDOK()
         'featureselected': function (evt) {
             var popupText = "";
             $.each(evt.feature.attributes, function (attr) {
-                popupText += attr + ": " + this + "<br>";
+                if (attr != "label") { //als attr label is dan niks weergeven, omdat die kolom al weergegeven wordt met eigen naam
+                    popupText += attr + ": " + this + "<br>";
+                }
             });
-            var feature = evt.feature;
+            var feature = evt.feature;    
             var popup = new OpenLayers.Popup.FramedCloud("popup", OpenLayers.LonLat.fromString(feature.geometry.toShortString()), null, "<div style='font-size:.8em'>" + popupText + "</div>", null, true);
             feature.popup = popup;
             map.addPopup(popup);
         },
         'featureunselected': function (evt) {
-            var feature = evt.feature;
+            var feature = evt.feature;    
             map.removePopup(feature.popup);
             feature.popup.destroy();
             feature.popup = null;
@@ -498,38 +502,31 @@ function initMapPDOK()
                         point_featureLL = new OpenLayers.Feature.Vector(newPoint);
                     }
                 }
-                if (i > xKolom + 3) 
-                {
-                    point_feature.attributes['kolom' + i] = $(this).html(); //default value
+                if (i > xKolom + 3) {
+                    point_feature.attributes['kolom' + (i-4)] = $(this).html();//i-4 begin bij 1
                     var i_excel = i - 5; //number of kolomindex from dropdownlist
-
-                    if (lat != null && lat != "") 
-                    {
-                        if (i == labelKolom) {//dit statement is nodig om een label onder de marker te plaatsen
+                    /*get values from dropdown lists (dit is nodig voor het stukje in else dat niet werkt)
+                    var id_dropdown = "excel_" + i_excel;
+                    var e_dropdown = document.getElementById(id_dropdown);
+                    var value_dropdown = e_dropdown.options[e_dropdown.selectedIndex].text;*/
+                    if (lat != null && lat != "") {
+                        if (i == labelKolom) {
                             point_featureLL.attributes['label'] = $(this).html();
                         }
-                        else 
-                        {
-                           //get values from dropdown lists
-                            var id_dropdown = "excel_" + i_excel;
-                            var e_dropdown = document.getElementById(id_dropdown);
-                            var value_dropdown = e_dropdown.options[e_dropdown.selectedIndex].text;
+                        if (eerste_regel_checked) {
+                            var id_kolomnaam = "kolomnaam_" + i_excel;
+                            var property = document.getElementById(id_kolomnaam).innerHTML;
+                            point_featureLL.attributes[property] = $(this).html();
+                        }
+                        else {
+                            /* op de een of andere manier werkt dit niet...
+                            var kolomnaam = value_dropdown;
+                            point_featureLL.attributes[kolomnaam] = $(this).html();
+                            */
+                            point_featureLL.attributes['kolom' + (i - 4)] = $(this).html();
+                        }
 
-                            //if kolomnames are given at input, make kolomname the given name (from excel origin)
-                            var eerste_regel_checked = $("input[name='check_eerste_regel']").is(':checked');
-                            if (eerste_regel_checked) { //tabel heeft kolomnamen
-                                var id_kolomnaam = "kolomnaam_" + i_excel;
-                                var kolomnaam = document.getElementById(id_kolomnaam).innerHTML;
-                                point_featureLL.attributes[kolomnaam] = $(this).html();
-                            }
-                            //if kolomnames aren't given, use the values of the dropdown lists as kolomnames
-                            else {//tabel heeft geen kolomnamen
-                                var kolomnaam = value_dropdown;
-                                point_featureLL.attributes[kolomnaam] = $(this).html();
-                            } 
-                        }   
-                        
-                    }
+                    }                    
                 }
             });
             vector_layer.addFeatures(point_feature);
@@ -540,10 +537,8 @@ function initMapPDOK()
         }
     });
     vector_layerLL.refresh();
-    //    alert (vector_layer.features.length);
     if (vector_layerLL.features.length > 0)
     {
-        //        alert (minX + "<br>" + maxX + "<br>" + minY + "<br>" +maxY);
         map.zoomToExtent(new OpenLayers.Bounds(minX, minY, maxX, maxY).transform(map.displayProjection, map.projection));
         createLatLonJSON();
     } else
@@ -555,12 +550,19 @@ function initMapPDOK()
 
 function createLatLonJSON()
 {
+    //JSON LL
     var myJSON = new OpenLayers.Format.GeoJSON(
     {
         'internalProjection' : gg,
         'externalProjection' : sm
     }).write(vector_layerLL.features, true);
+    if (myJSON.indexOf("label") != 0){
+        console.log(myJSON);
+        var index_label = myJSON.indexOf("label");
+    }
     $("#showJSONLL").html(myJSON);
+
+    //JSON RD
     var myJSON = new OpenLayers.Format.GeoJSON().write(vector_layer.features, true);
     $("#showJSONRD").html(myJSON);
 }
