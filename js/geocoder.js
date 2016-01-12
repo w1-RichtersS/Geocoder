@@ -503,7 +503,6 @@ function initMapPDOK()
                     }
                 }
                 if (i > xKolom + 3) {
-                    point_feature.attributes['kolom' + (i-4)] = $(this).html();//i-4 begin bij 1
                     var i_excel = i - 5; //number of kolomindex from dropdownlist
                     /*get values from dropdown lists (dit is nodig voor het stukje in else dat niet werkt)
                     var id_dropdown = "excel_" + i_excel;
@@ -517,6 +516,7 @@ function initMapPDOK()
                             var id_kolomnaam = "kolomnaam_" + i_excel;
                             var property = document.getElementById(id_kolomnaam).innerHTML;
                             point_featureLL.attributes[property] = $(this).html();
+                            point_feature.attributes[property] = $(this).html();
                         }
                         else {
                             /* op de een of andere manier werkt dit niet...
@@ -524,9 +524,10 @@ function initMapPDOK()
                             point_featureLL.attributes[kolomnaam] = $(this).html();
                             */
                             point_featureLL.attributes['kolom' + (i - 4)] = $(this).html();
+                            point_feature.attributes['kolom' + (i - 4)] = $(this).html();
                         }
 
-                    }                    
+                    }
                 }
             });
             vector_layer.addFeatures(point_feature);
