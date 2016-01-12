@@ -142,7 +142,7 @@ function import_excel()
             $("#outputTab").html("<table cellspacing=\"5\" cellpadding=\"5\" border=\"0\">\
                                     <tr>\
                                         <td><button id=execute_import class=\"more-space\">Geocoding uitvoeren</button></td>\
-                                        <td><a href=\"#\" id=download_csv role=\"button\" >Download CSV</button></a></td>\
+                                        <td><button><a href=\"#\" id=download_csv role=\"button\" >Download CSV</button></a></button></td>\
                                     </tr>\
                                   </table><br />\
                                   <table id='gridtable'>" + top_row + content + "</table>");
@@ -573,7 +573,6 @@ function createLatLonJSON()
         var last_sub = after_substr.substr(index_komma + 1, length_myJSON);//save new substring after the label-line
 
         var myJSON = before_substr + last_sub;
-        console.log(myJSON);
 
     }
     $("#showJSONLL").html(myJSON);

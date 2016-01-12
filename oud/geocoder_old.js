@@ -241,7 +241,7 @@ function initMapPDOK()
 
     var defaultStyle1 = new OpenLayers.Style(
     {
-        externalGraphic: 'has.png',
+        externalGraphic: '../images/has.png',
         graphicWidth: 28,
         graphicHeight: 28,
         label: "${label}",  // gebruik van het attribuut van het feature genaamd label 
