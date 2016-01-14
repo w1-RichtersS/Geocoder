@@ -142,7 +142,8 @@ function import_excel()
             $("#outputTab").html("<table cellspacing=\"5\" cellpadding=\"5\" border=\"0\">\
                                     <tr>\
                                         <td><button id=execute_import class=\"more-space\">Geocoding uitvoeren</button></td>\
-                                        <td><button><a href=\"#\" id=download_csv role=\"button\" >Download CSV</button></a></button></td>\
+                                        <td><button><a href=\"#\" title=\"Met deze button download je het CSV waar de decimalen gescheiden zijn door een komma\" class=\"download_csv\" role=\"button\">Download CSV NL</button></a></button></td>\
+                                        <td><button><a href=\"#\" title=\"Met deze button download je het CSV waar de decimalen gescheiden zijn door een punt\" class=\"download_csv\" role=\"button\">Download CSV EN</button></a></button></td>\
                                     </tr>\
                                   </table><br />\
                                   <table id='gridtable'>" + top_row + content + "</table>");
@@ -188,8 +189,8 @@ function import_excel()
                         var search = "";
                         var fields = all_data[k].split(";");
                         var new_regel_noLabel = "";
-                        for (var i = 0; i < new_regel.length; i++ ){//function to make label disapear in searching for adresses
-                            if (new_regel[i] != 8){
+                        for (var i = 0; i < new_regel.length; i++) {//function to make label disapear in searching for adresses
+                            if (new_regel[i] != 8) {
                                 new_regel_noLabel += new_regel[i];
                             }
                         }
@@ -230,7 +231,7 @@ function import_excel()
             // zodat deze gedownload kan worden en in excel kan worden geopend.
             //script voor download_csv button
             //$(document).ready(function () {
-            function exportTableToCSV($table, filename) {
+            function exportTableToCSV($table, filename, lang) {
                 var $headers = $table.find('tr:has(th)')
                     , $rows = $table.find('tr:has(td)')
 
@@ -242,12 +243,20 @@ function import_excel()
                 // actual delimiter characters for CSV format
                     , colDelim = '";"'
                     , rowDelim = '"\r\n"';
-
                 // Grab text from table into CSV formatted string
                 var csv = '"';
-                csv += formatRows($headers.map(grabRow));
-                csv += rowDelim;
-                csv += formatRows($rows.map(grabRow)) + '"';
+                if (lang == "Download CSV NL"){
+                    csv += formatRows($headers.map(grabRowNL));
+                    csv += rowDelim;
+                    csv += formatRows($rows.map(grabRowNL)) + '"';
+                }
+                else if (lang == "Download CSV EN"){
+                    csv += formatRows($headers.map(grabRowEN));
+                    csv += rowDelim;
+                    csv += formatRows($rows.map(grabRowEN)) + '"';
+                }
+                
+                
 
                 // Data URI
                 var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
@@ -278,41 +287,59 @@ function import_excel()
                 }
 
                 // Grab and format a row from the table
-                function grabRow(i, row) {
+                function grabRowNL(i, row) {
 
                     var $row = $(row);
                     //for some reason $cols = $row.find('td') || $row.find('th') won't work...
                     var $cols = $row.find('.showtd');
                     if (!$cols.length) $cols = $row.find('.showth');
 
-                    return $cols.map(grabCol)
+                    return $cols.map(grabColNL)
                                 .get().join(tmpColDelim);
                 }
-                // Grab and format a column from the table 
-                function grabCol(j, col) {
+                function grabRowEN(i, row) {
+
+                    var $row = $(row);
+                    //for some reason $cols = $row.find('td') || $row.find('th') won't work...
+                    var $cols = $row.find('.showtd');
+                    if (!$cols.length) $cols = $row.find('.showth');
+
+                    return $cols.map(grabColEN)
+                                .get().join(tmpColDelim);
+                }
+                // Grab and format a column from the table for NL version of excel
+                function grabColNL(j, col) {
                     var $col = $(col),
                         $text = $col.text();
+
                     //replace scheidingstekens voor nederlandse excel
                     $text = $text.replace(".", ",");
 
                     return $text.replace('"', '""'); // escape double quotes
 
                 }
+                function grabColEN(j, col) {
+                    var $col = $(col),
+                        $text = $col.text();
+
+                    return $text.replace('"', '""'); // escape double quotes
+
+                }
             };
             // });
-            $("#download_csv").click(function (event) {
+            $(".download_csv").click(function (event) {
                 // var outputFile = 'export'
                 var outputFile = prompt("Hoe wil je het bestand noemen?\nHet bestand komt terecht in de map \"Downloads\" (op de C-schijf)", "Geocoder"); //(Note: This won't have any effect on Safari)
                 outputFile = outputFile.replace('.csv', '') + '.csv'
+                var lang = $(this).html();
 
                 // CSV
-                exportTableToCSV.apply(this, [$('#gridtable'), outputFile]);
+                exportTableToCSV.apply(this, [$('#gridtable'), outputFile, lang]);
+
 
                 // IF CSV, don't do event.preventDefault() or return false
                 // We actually need this to be a typical hyperlink
             });
-
-
 
 
 
